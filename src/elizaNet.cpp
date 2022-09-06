@@ -78,7 +78,7 @@ void ElizaNet::startBot() {
             std::cout << "Command recieved! " << fromserver->getMessage() << std::endl;
         }
         else {
-            std::cout << fromserver->toString() << std::endl;
+            std::cout << "Nothing to do...." << std::endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
         delete toserver;
@@ -100,8 +100,12 @@ void ElizaNet::startHead() {
         char buf[1024];
 
         std::string input;
+        std::cout << "ElizaNet> ";
         std::cin >> input;
 
+        if(input == "test") {
+            toserver->createPaket(SenderType::HEAD, MessageType::GENERIC, "TEST");
+        }
         if(input == "sendcommand") {
             std::string target;
             std::cin >> target;
@@ -112,12 +116,26 @@ void ElizaNet::startHead() {
             toserver->createPaket(SenderType::HEAD, MessageType::COMMAND, snd);
         }
 
+        std::cout << "paket created, trying to send now..." << std::endl;
         this->sockClient = socket(AF_INET, SOCK_STREAM, 0);
         connect(sockClient, (struct sockaddr*)&server, sizeof(server));
+        std::cout << "connection successfull, sending now..." << std::endl;
         send(sockClient,  toserver->toString().c_str(), strlen(toserver->toString().c_str()), 0);
         read(sockClient, buf, 1024);
+        std::cout << "answer recieved..." << std::endl << "===========" << std::endl;
         fromserver->parsePaket(std::string(buf));
-        std::cout << fromserver->toString() << std::endl;
+
+        if(fromserver->getSenderType() == "SERVER") {
+            if(fromserver->getMessageType() == "GENERIC") {
+                if(fromserver->getMessage() == "CMDRECIEVED") {
+                    std::cout << "Command recieved and waiting for client callback..." << std::endl << std::endl;
+                }
+                else if(fromserver->getMessage() == "ALLOK") {
+                    std::cout << "Server online and everything running" << std::endl << std::endl;
+                }
+            }
+        }
+
         delete toserver;
         delete fromserver; 
     }
@@ -142,7 +160,12 @@ ElizaPaket* ElizaNet::handleHead(ElizaPaket* fromServer) {
         this->targetIp = cmd[0];
         this->targetCommand = cmd[1];
         this->commandMap[targetIp] = targetCommand;
-        response->createPaket(SenderType::SERVER, MessageType::GENERIC, "RECIEVED"); 
+        response->createPaket(SenderType::SERVER, MessageType::GENERIC, "CMDRECIEVED"); 
+    }
+    else if(fromServer->getMessageType() == "GENERIC") {
+        if(fromServer->getMessage() == "TEST") {
+            response->createPaket(SenderType::SERVER, MessageType::GENERIC, "ALLOK");
+        }
     }
     return response;
 }
