@@ -118,8 +118,9 @@ void ElizaNet::startHead() {
 
         std::cout << "paket created, trying to send now..." << std::endl;
         this->sockClient = socket(AF_INET, SOCK_STREAM, 0);
-        connect(sockClient, (struct sockaddr*)&server, sizeof(server));
-        std::cout << "connection successfull, sending now..." << std::endl;
+        if(connect(sockClient, (struct sockaddr*)&server, sizeof(server)) == 0) {
+            std::cout << "connection successfull, sending now..." << std::endl;
+        }
         send(sockClient,  toserver->toString().c_str(), strlen(toserver->toString().c_str()), 0);
         read(sockClient, buf, 1024);
         std::cout << "answer recieved..." << std::endl << "===========" << std::endl;

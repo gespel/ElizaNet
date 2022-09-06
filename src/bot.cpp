@@ -2,6 +2,6 @@
 
 int main() {
     ElizaNet *bot = new ElizaNet();
-    bot->setupBot("127.0.0.1", 8082);
+    bot->setupBot("144.91.85.101", 8082);
     bot->startBot();
 }
