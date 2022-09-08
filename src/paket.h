@@ -9,10 +9,12 @@ class ElizaPaket {
 public:
     void createPaket(SenderType st, MessageType mt, std::string message);
     void parsePaket(std::string input);
-    std::string getSenderType();
-    std::string getMessageType();
+    SenderType getSenderType();
+    MessageType getMessageType();
     std::string getMessage();
-    std::string toString();
+    std::string senderTypeToString();
+    std::string messageTypeToString();
+    std::string toNetworkPaket();
 private:
     SenderType st;
     MessageType mt;

