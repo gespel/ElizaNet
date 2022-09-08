@@ -66,6 +66,7 @@ void ElizaNet::startBot() {
         ElizaPaket *toserver = new ElizaPaket();
         ElizaPaket *fromserver = new ElizaPaket();
         char buf[1024];
+        memset(&buf[0], 0, sizeof(buf));
 
         toserver->createPaket(SenderType::BOT, MessageType::STATUS, "WHATSGOINGON?");
         //std::cout << toserver->toNetworkPaket();

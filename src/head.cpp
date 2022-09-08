@@ -2,6 +2,6 @@
 
 int main() {
     ElizaNet* head = new ElizaNet();
-    head->setupHead("144.91.85.101", 8082);
+    head->setupHead("127.0.0.1", 8082);
     head->startHead();
 }

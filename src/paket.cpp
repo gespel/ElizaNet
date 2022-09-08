@@ -7,37 +7,37 @@ void ElizaPaket::createPaket(SenderType st, MessageType mt, std::string message)
 }
 
 void ElizaPaket::parsePaket(std::string input) {
-    char ststr = input.at(0);
-    std::string mtstr = input.substr(1,1);
+    char st = input.at(0);
+    char mt = input.at(1);
     std::string msg = input.substr(2, strlen(input.c_str())-1);
     //std::cout << "Sendertype: " << ststr << " Messagetype: " << mtstr << " Message: " << msg << std::endl;
 
-    if(ststr == '0') {
+    if(st == '0') {
         this->st = SenderType::SERVER;
     }
-    else if(ststr == '1') {
+    else if(st == '1') {
         this->st = SenderType::BOT;
     }
-    else if(ststr == '2') {
+    else if(st == '2') {
         this->st = SenderType::HEAD;
     }
     else {
         this->st = SenderType::UNDEFINED;
     }
 
-    if(mtstr == "0") {
+    if(mt == '0') {
         this->mt = MessageType::GENERIC;
     }
-    else if(mtstr == "1") {
+    else if(mt == '1') {
         this->mt = MessageType::STATUS;
     }
-    else if(mtstr == "2") {
+    else if(mt == '2') {
         this->mt = MessageType::ATTACK;
     }
-    else if(mtstr == "3") {
+    else if(mt == '3') {
         this->mt = MessageType::COMMAND;
     }
-    else if(mtstr == "4") {
+    else if(mt == '4') {
         this->mt = MessageType::OUTPUT;
     }
     else {
