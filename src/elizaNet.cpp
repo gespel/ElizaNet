@@ -27,6 +27,7 @@ void ElizaNet::handleClients(int sock) {
     char buf[128];
     char clientIp[16];
     socklen_t len = sizeof(client);
+    memset(&buf[0], 0, sizeof(buf));
 
     read(sock, buf, sizeof(char)*128);
     ElizaPaket *fromSender = new ElizaPaket();
@@ -100,6 +101,7 @@ void ElizaNet::startHead() {
         ElizaPaket *toserver = new ElizaPaket();
         ElizaPaket *fromserver = new ElizaPaket();
         char buf[1024];
+        memset(&buf[0], 0, sizeof(buf));
 
         std::string input;
         std::cout << "ElizaNet> ";
@@ -110,10 +112,11 @@ void ElizaNet::startHead() {
         }
         if(input == "sendcommand") {
             std::string target;
-            std::cin >> target;
             std::string command;
-            std::cin >> command;
-            std::string snd = target + ":" + command + ":";
+            std::cout << "Enter target IP: ";
+            std::cin >> target;
+            std::getline(std::cin, command);
+            std::string snd = target + " " + command + " ";
 
             toserver->createPaket(SenderType::HEAD, MessageType::COMMAND, snd);
         }
@@ -159,11 +162,19 @@ std::vector<std::string> ElizaNet::split(std::string s, std::string delimiter) {
 ElizaPaket* ElizaNet::handleHead(ElizaPaket* fromServer) {
     ElizaPaket* response = new ElizaPaket();
     if(fromServer->getMessageType() == MessageType::COMMAND) {
-        std::vector<std::string> cmd = this->split(fromServer->getMessage(), ":");
+        std::vector<std::string> cmd = this->split(fromServer->getMessage(), " ");
         this->targetIp = cmd[0];
-        this->targetCommand = cmd[1];
-        this->commandMap[targetIp] = targetCommand;
-        response->createPaket(SenderType::SERVER, MessageType::GENERIC, "CMDRECIEVED"); 
+        for(int i = 1; i < cmd.size(); i++) {
+            if(i == cmd.size() - 1) {
+                this->targetCommand += cmd[i];
+            }
+            else {
+                this->targetCommand += cmd[i] + " ";
+            }
+        }
+        this->commandMap[targetIp] = this->targetCommand;
+        response->createPaket(SenderType::SERVER, MessageType::GENERIC, "CMDRECIEVED");
+        this->targetCommand = "";
     }
     else if(fromServer->getMessageType() == MessageType::GENERIC) {
         if(fromServer->getMessage() == "TEST") {
