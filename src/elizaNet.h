@@ -25,11 +25,6 @@ public:
     void stopServer();
     void handleClients(int sock);
 
-    void setupBot(std::string serverIp, unsigned int serverPort);
-    void startBot();
-
-    void setupHead(std::string serverIp, unsigned int serverPort);
-    void startHead();
     std::vector<std::string> split(std::string s, std::string delimiter);
 private:
     int sockServer, sockClient;
